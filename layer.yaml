@@ -1,0 +1,7 @@
+includes: 
+  - 'layer:basic'
+  - 'layeer:flask'
+  - 'interface:pgsql'
+repo: 'https://github.com/chrisheckler/layer-flask-app'
+
+

@@ -1,0 +1,12 @@
+me:  flask-app
+summary: flask-app
+maintainer: Chris Heckler <hecklerchris@hotmail.com>
+description: |
+ A simple flask-app the utilizes PostgreSQL 
+tags:
+  - webapp
+series:
+  - bionic
+requires:
+  pgsql:
+    interface: pgsql
