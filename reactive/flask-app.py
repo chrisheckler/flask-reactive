@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from charms.reactive import (
         when,
@@ -35,12 +36,12 @@ from charmhelpers.core import unitdata
 
 PROJECT_PATH = "/home/ubuntu/"
 
-
 @when_not('app.installed')
 def install():
-    """ Install Flas requirements.txt
+    """ Install Flask requirements.txt
     """
-    install_requirements(PROJECT_PATH + '/requirements.txt')
     status_set('active', 'Application Installed')
+    install_requirements('requiremetns.txt')
     log('Application requirements installed')
     set_flag('app.installed')
+

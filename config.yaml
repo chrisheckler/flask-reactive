@@ -1,4 +1,4 @@
-ptions:
+options:
   nginx:
     default: True
     type: boolean
