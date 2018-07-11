@@ -1,7 +1,8 @@
 # flask-app
-This is a basic flask app that utilizes PostgreSQL as the database.
+This is a basic flask app that implements nginx and postgreSQL.
 
 ## Components
 - layer:basic
-- layer:flask
+- layer:nginx
+- interface:http
 - interface:pgsql

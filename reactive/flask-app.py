@@ -22,8 +22,7 @@ from charmhelpers.core.host import (
         service_running,
 )
 
-from charms.layer.flaskhelpers import (
-        install_requirements,
+from charms.layer.flask_app import (
         start_api,
         restart_api,
         start,
@@ -34,13 +33,11 @@ from charms.layer.flaskhelpers import (
 from charmhelpers.core import unitdata
 
 
-PROJECT_PATH = "/home/ubuntu/"
-
-@when_not('flask.installed')
+@when_not('flask-app.installed')
 def install():
-    """ Install Flask 
+    """ Install Flask
     """
     status_set('active', 'Application Installed')
     log('Flask installed')
-    set_flag('app.installed')
+    set_flag('flask-app.installed')
 

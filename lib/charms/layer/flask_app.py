@@ -4,9 +4,8 @@ import toml
 
 from subprocess import call, Popen
 
-from charms.reactive import  set_state
-from charmhelpers.core import hookenv, host 
-from charmhelpers.core.hookenv import 
+from charms.reactive import set_state
+from charmhelpers.core import hookenv, host
 from charmhelpers.core.templating import render
 
 config = hookenv.config()
@@ -30,7 +29,8 @@ def restart_api(port):
 
 def start(path, app, port, template, context):
     if config["nginx"]:
-        start_api_gunicorn(path, app, port, config['workers'], template, context)
+        start_api_gunicorn(path, app, port,
+                           config['workers'], template, context)
     else:
         path = path.rstrip('/')
         Popen(["python3", path])
@@ -56,8 +56,8 @@ def start_api_gunicorn(path, app, port, workers, template, context):
     unitfile_context = {**unitfile_dict, **context}
     unitfile_context['port'] = str(port)
     unitfile_context['pythonpath'] = info[0]
-    unitfile_context['app'] = app 
-    unitfile_context['workers'] = str(workers) 
+    unitfile_context['app'] = app
+    unitfile_context['workers'] = str(workers)
     render(source=template,
            target='/etc/systemd/system/flask.service',
            context=unitfile_context)
@@ -104,7 +104,7 @@ def rewrite_unitfile():
         unitfile_context = load_unitfile()
         unitfile_context['port'] = config['flask-port']
         unitfile_context['pythonpath'] = pp
-        unitfile_context['app'] = app 
+        unitfile_context['app'] = app
         unitfile_context['workers'] = config['workers']
 
         render(source=template,
@@ -119,7 +119,7 @@ def get_app_info():
         if line != "":
             path, app, template = line.split()
             return path, app, template
-    return "", "", ""   
+    return "", "", ""
 
 def load_unitfile():
     if not os.path.isfile('unitfile.toml'):
@@ -128,7 +128,7 @@ def load_unitfile():
     with open('unitfile.toml') as fp:
         conf = toml.loads(fp.read())
 
-    return conf   
+    return conf
 
 def gracefull_reload():
     if os.path.exists('/home/ubuntu/flask/master.pid'):
