@@ -1,5 +1,7 @@
 includes: 
   - 'layer:basic'
+  - 'layer:nginx'  
+  - 'interface:http'
   - 'interface:pgsql'
 repo: 'https://github.com/chrisheckler/layer-flask-app'
 

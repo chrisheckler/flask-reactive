@@ -36,12 +36,11 @@ from charmhelpers.core import unitdata
 
 PROJECT_PATH = "/home/ubuntu/"
 
-@when_not('app.installed')
+@when_not('flask.installed')
 def install():
-    """ Install Flask requirements.txt
+    """ Install Flask 
     """
     status_set('active', 'Application Installed')
-    install_requirements('requiremetns.txt')
-    log('Application requirements installed')
+    log('Flask installed')
     set_flag('app.installed')
 
