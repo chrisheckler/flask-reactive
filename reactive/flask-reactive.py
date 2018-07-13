@@ -26,6 +26,7 @@ from charmhelpers.core import unitdata
 
 from lib.charms.layer.flask_reactive import (
     FLASK_HOME,
+    render_flask_secrets,
 )
 
 
@@ -51,14 +52,21 @@ def install_and_create_dir():
 
 @when('flask-reactive.installed')
 @when_not('flask-reactive.secrets.available')
-def render_flask_secrets():
-    """Write out flask secrets
-    """
+def render_secrets():
+    """Write out flask secrets."""
 
     status_set('active', 'Rendering flask-reactive config')
 
     ctxt = {
-            "DEBUG": False,
-            "TESTING": FLASK_HO
-            "SECRET_KEY": os.urandom(16)
-            }
+             'DEBUG': False,
+             'TESTING': FLASK_HOME,
+             'SECRET_KEY': os.urandom(16),
+           }
+
+    render_flask_secrets(ctxt)
+
+    status_set('active', 'Flask config rendered')
+    log('Flask config rendered')
+    set_flag('flask-reactive.secrets.available')
+
+

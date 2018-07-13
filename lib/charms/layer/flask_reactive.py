@@ -9,14 +9,13 @@ from charmhelpers.core import unitdata
 from charmhelpers.core.hookenv import charm_dir
 
 FLASK_HOME = "/home/ubuntu/flask"
-FLASK_SECRETS = os.path.join(FLASK_HOME, 'flask_secrets', 'flask_secrets.py')
+FLASK_SECRETS = os.path.join(FLASK_HOME, 'flask_secrets.py')
 
 kv = unitdata.kv()
 
 
 def load_template(name, path=None):
-    """Load template file for rendering config
-    """
+    """Load template file for rendering config."""
 
     if path is None:
         path = os.path.join(charm_dir(), 'templates')
@@ -27,8 +26,7 @@ def load_template(name, path=None):
 
 
 def render_flask_secrets(secrets=None):
-    """Renders flask secrets from template
-    """
+    """Renders flask secrets from template."""
 
     if secrets:
         secrets = secrets
@@ -46,16 +44,14 @@ def render_flask_secrets(secrets=None):
 
 
 def spew(path, data):
-    """Writes data to path
-    """
+    """Writes data to path."""
 
     with open(path, 'w+') as f:
         f.write(data)
 
 
 def return_secrets(secrets=None):
-    """Return sercrets dictionary
-    """
+    """Return sercrets dictionar."""
 
     if secrets:
         secrets_mod = secrets
