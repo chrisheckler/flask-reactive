@@ -1,9 +1,7 @@
 Flask
-Jinja2
 Gunicorn
 Flask-API
 Flask-Migrate
 Flask-Script
 Flask-SQLAlchemy
 SQLAlchemy
-nginx-full

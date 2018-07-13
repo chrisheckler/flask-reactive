@@ -8,7 +8,7 @@ This app requires a JUJU installation, cloud provider or can be bootstrapped on 
 	juju deploy postgresql
 Next, you will need to:
 	juju relate flask-reactive:pgsql postgresql:db
-	juju expose flask-reactive
+	juju expose nginx
 
 ### Contact Information
 Chris Heckler <hecklerchris@hotmail.com>
