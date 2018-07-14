@@ -1,0 +1,4 @@
+{% for unit in db %}
+"mysql://{{unit['user']}}:{{unit['password']}}@{{unit['host']}}/{{unit['database
+˓→']}}",
+{% endfor %}

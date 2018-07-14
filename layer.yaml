@@ -1,13 +1,7 @@
 includes: 
   - 'layer:basic'
   - 'layer:nginx'  
-  - 'interface:http'
   - 'interface:pgsql'
-options:
-  basic:
-    packages:
-      - 'git'
-      
 repo: 'https://github.com/chrisheckler/layer-flask-reactive'
 
 

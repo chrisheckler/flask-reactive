@@ -22,13 +22,16 @@ from charmhelpers.core.host import (
     service_running,
 )
 
-from charmhelpers.core import unitdata
+from charmhelpers.core import unitdata, hookenv
 
 from lib.charms.layer.flask_reactive import (
     FLASK_HOME,
     render_flask_secrets,
 )
 
+from charmhelpers.contrib.charmsupport.volumes import get_config
+
+from charms.layer.nginx import configure_site
 
 @when_not('flask-reactive.installed')
 def install_and_create_dir():
@@ -39,7 +42,7 @@ def install_and_create_dir():
     if not os.path.exists(FLASK_HOME):
         os.mkdir(FLASK_HOME)
 
-    packages = ['Flask', 'Flask-API', 'Flask-Migrate',
+    packages = ['Flask', 'Flask-API', 'Flask-Migrate', 'gunicorn'
                 'Flask-Script', 'Flask-SQLAlchemy', 'SQLAlchemy']
 
     for pkg in packages:
@@ -54,12 +57,12 @@ def install_and_create_dir():
 @when_not('flask-reactive.secrets.available')
 def render_secrets():
     """Write out flask secrets."""
-
+    
     status_set('active', 'Rendering flask-reactive config')
 
     ctxt = {
              'DEBUG': False,
-             'TESTING': FLASK_HOME,
+             'TESTING': False,
              'SECRET_KEY': os.urandom(16),
            }
 
@@ -70,3 +73,16 @@ def render_secrets():
     set_flag('flask-reactive.secrets.available')
 
 
+@when('nginx.available')
+@when_not('nginx.configured')
+def nginx_configure():
+    """Configures NGINX to flask-reactive"""
+
+    status_set('active', 'Configuring Nginx')
+
+    configure_site('flask-reactive', 'vhost.conf', 
+                   app_path='/home/ubuntu/flask')
+
+    log('Nginx Configured')
+    status_set('active', 'Nginx Cconfigured')
+    set_flag('nginx.configure')
