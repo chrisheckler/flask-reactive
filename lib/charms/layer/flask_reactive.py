@@ -1,12 +1,21 @@
 import os
 
+import toml
+
 from jinja2 import (
     Environment,
     FileSystemLoader,
 )
 
-from charmhelpers.core import unitdata
-from charmhelpers.core.hookenv import charm_dir
+from charmhelpers.core import unitdata, hookenv, host
+
+from charmhelpers.core.hookenv import charm_dir, status_set, log
+
+from charmhelpers.contrib.python.packages import pip_install_requirements
+
+from charmhelpers.core.templating import render
+
+
 
 FLASK_HOME = "/home/ubuntu/flask"
 FLASK_SECRETS = os.path.join(FLASK_HOME, 'flask_secrets.py')
@@ -59,3 +68,41 @@ def return_secrets(secrets=None):
         secrets_mod = {}
 
     return secrets_mod
+
+
+def load_site():
+    if not os.path.isfile('site.toml'):
+        return {}
+
+    with open('site.toml') as fp:
+        conf = toml.loads(fp.read())
+
+    return conf
+
+
+def configure_site(site, template, **kwargs):
+
+    status_set('maintenance', 'Configuring site {}'.format(site))
+
+    status_set('active', '')
+    config = hookenv.config()
+    context = load_site()
+    context['host'] = config['host']
+    context['port'] = config['port']
+    context.update(**kwargs)
+    conf_path = '/etc/nginx/sites-available/{}'.format(site)
+    if os.path.exists(conf_path):
+        os.remove(conf_path)
+    render(source=template,
+           target=conf_path,
+           context=context)
+
+    symlink_path = '/etc/nginx/sites-enabled/{}'.format(site)
+    if os.path.exists(symlink_path):
+        os.unlink(symlink_path)
+
+    if os.path.exists('/etc/nginx/sites-enabled/default'):
+        os.remove('/etc/nginx/sites-enabled/default')
+
+    os.symlink(conf_path, symlink_path)
+    log(context)

@@ -31,7 +31,11 @@ from lib.charms.layer.flask_reactive import (
 
 from charmhelpers.contrib.charmsupport.volumes import get_config
 
-from charms.layer.nginx import configure_site
+from charms.layer.flask_reactive import configure_site
+
+from charmhelpers.contrib.python.packages import pip_install_requirements
+
+from charmhelpers.core.hookenv import charm_dir
 
 @when_not('flask-reactive.installed')
 def install_and_create_dir():
@@ -42,7 +46,7 @@ def install_and_create_dir():
     if not os.path.exists(FLASK_HOME):
         os.mkdir(FLASK_HOME)
 
-    packages = ['Flask', 'Flask-API', 'Flask-Migrate', 'gunicorn'
+    packages = ['Flask', 'Flask-API', 'Flask-Migrate', 'gunicorn',
                 'Flask-Script', 'Flask-SQLAlchemy', 'SQLAlchemy']
 
     for pkg in packages:
@@ -85,4 +89,4 @@ def nginx_configure():
 
     log('Nginx Configured')
     status_set('active', 'Nginx Cconfigured')
-    set_flag('nginx.configure')
+    set_flag('nginx.configured')

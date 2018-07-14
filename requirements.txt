@@ -1,5 +1,5 @@
 Flask
-Gunicorn
+gunicorn
 Flask-API
 Flask-Migrate
 Flask-Script
