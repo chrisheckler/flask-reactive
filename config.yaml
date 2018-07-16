@@ -2,11 +2,11 @@
    port:
      default: 5000
      type: int
-     description: flask-reactive listening port
+     description: flask_reactive listening port
    workers:
      default: 2
      type: int
-     description: Number of gunicoarn workers
+     description: Number of gunicorn workers
   
 
   

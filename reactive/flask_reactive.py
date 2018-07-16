@@ -94,7 +94,7 @@ def nginx_configure():
 
     status_set('active', 'Configuring Nginx')
 
-    config_nginx('flask-reactive', 'vhost.conf',
+    config_nginx('flask_reactive', 'vhost.conf',
                  app_path='/home/ubuntu/flask')
 
     log('Nginx Configured')
@@ -110,8 +110,9 @@ def flask_gunicorn_configure():
     status_set('active', 'Starting Flask-reactive')
 
     stop_flask()
-    start_flask_gunicorn('/home/ubuntu/flask', 'flask-reactive', 
+    start_flask_gunicorn(FLASK_HOME, 'flask-reactive', 
                          config['port'], config['workers'],
-                         load_unitfile('unitfile.toml'))
+                         )
     status_set('active', 'Flask-reactive initialized')
+    log('Flask-reactive Ready')
     set_flag('flask.gunicorn.ready')

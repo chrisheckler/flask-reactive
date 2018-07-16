@@ -2,6 +2,6 @@ includes:
   - 'layer:basic'
   - 'layer:nginx'  
   - 'interface:pgsql'
-repo: 'https://github.com/chrisheckler/layer-flask-reactive'
+repo: 'https://github.com/chrisheckler/layer-flask_reactive'
 
 

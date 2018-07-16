@@ -1,5 +1,5 @@
-name:  flask-reactive
-summary: flask-reactive
+name:  flask_reactive
+summary: flask_reactive
 maintainer: Chris Heckler <hecklerchris@hotmail.com>
 description: |
  A simple flask-app the utilizes PostgreSQL 

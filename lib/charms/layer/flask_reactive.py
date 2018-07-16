@@ -86,7 +86,19 @@ def load_site():
     return conf
 
 
+def load_unitfile():
+    """Loads unitfile.toml template"""
+
+    if not os.path.isfile('unitfile.toml'):
+        return {}
+    with open('unitfile.toml') as fp:
+        conf = toml.loads(fp.read()) 
+        
+    return conf
+
+
 def config_nginx(site, template, **kwargs):
+    """Configures nginx with site.toml and vhost.conf"""
 
     status_set('maintenance', 'Configuring site {}'.format(site))
 
@@ -116,23 +128,18 @@ def config_nginx(site, template, **kwargs):
 
 
 def stop_flask():
-    if host.service_running('flask-reactive'):
-        host.service_stop('flask-reactive')
-    call(['systemctl', 'disable', 'flask-reactive'])
-    if os.path.exists('etc/systemd/system/flask-reactive.service'):
-        os.remove('/etc/systemd/system/flask-reactive.service')
+    """Stops flask service"""
+
+    if host.service_running('flask_reactive'):
+        host.service_stop('flask_reactive')
+    call(['systemctl', 'disable', 'flask_reactive'])
+    if os.path.exists('etc/systemd/system/flask_reactive.service'):
+        os.remove('/etc/systemd/system/flask_reactive.service')
 
 
-def load_unitfile():
-    if not os.path.isfile('unitfile.toml'):
-        return {}
-    with open('unitfile.toml') as fp:
-        conf = toml.loads(fp.read())
+def start_flask_gunicorn(path, app, port, workers):
+    """Configures and starts gunicorn"""
 
-    return conf
-
-
-def start_flask_gunicorn(path, app, port, workers, template, context=None):
     stop_flask()
     path = path.rstrip('/')
     info = path.rsplit('/', 1)
@@ -147,16 +154,15 @@ def start_flask_gunicorn(path, app, port, workers, template, context=None):
                'main': main,
            })
     unitfile_dict = load_unitfile()
-    unitfile_context = {**unitfile_dict, **context}
+    unitfile_context = {**unitfile_dict}
     unitfile_context['port'] = str(port)
     unitfile_context['pythonpath'] = info[0]
     unitfile_context['app'] = app
     unitfile_context['workers'] = str(workers)
-    render(source=template,
-           target='/etc/systemd/system/flask-reactive.service',
+    render(source=load_template('unitfile.toml'),
+           target='/etc/systemd/system/{}.service'.format(app),
            context=unitfile_context)
 
-    call(['systemctl', 'enable', 'flask-reactive'])
-    host.service_start['flask-reactive']
+    call(['systemctl', 'enable', '{}'.format(app)])
 
 
