@@ -22,7 +22,7 @@ from charmhelpers.core.host import (
     service_running,
 )
 
-from charmhelpers.core import unitdata, hookenv
+from charmhelpers.core import unitdata, hookenv, host
 
 from lib.charms.layer.flask_reactive import (
     FLASK_HOME,
@@ -37,6 +37,7 @@ from charmhelpers.contrib.python.packages import pip_install_requirements
 
 from charmhelpers.core.hookenv import charm_dir
 
+
 @when_not('flask-reactive.installed')
 def install_and_create_dir():
     """Flask dir created for config, etc.
@@ -45,6 +46,9 @@ def install_and_create_dir():
 
     if not os.path.exists(FLASK_HOME):
         os.mkdir(FLASK_HOME)
+
+    if not os.path.exists('FLASK_HOME/instance'):
+        os.mkdir('FLASK_HOME/instance')
 
     packages = ['Flask', 'Flask-API', 'Flask-Migrate', 'gunicorn',
                 'Flask-Script', 'Flask-SQLAlchemy', 'SQLAlchemy']
@@ -67,7 +71,7 @@ def render_secrets():
     ctxt = {
              'DEBUG': False,
              'TESTING': False,
-             'SECRET_KEY': os.urandom(16),
+             'SECRET': os.urandom(16),
            }
 
     render_flask_secrets(ctxt)
@@ -90,3 +94,10 @@ def nginx_configure():
     log('Nginx Configured')
     status_set('active', 'Nginx Cconfigured')
     set_flag('nginx.configured')
+
+
+@when_not('gunicorn.configured')
+def configure_gunicorn():
+    """Configuring gunicorn"""
+
+    

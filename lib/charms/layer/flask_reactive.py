@@ -15,10 +15,16 @@ from charmhelpers.contrib.python.packages import pip_install_requirements
 
 from charmhelpers.core.templating import render
 
+from charmhelpers.core.host import (
+    service_stop,
+    service_start,
+    service_restart,
+    service_running,
+)
 
 
 FLASK_HOME = "/home/ubuntu/flask"
-FLASK_SECRETS = os.path.join(FLASK_HOME, 'flask_secrets.py')
+FLASK_SECRETS = os.path.join(FLASK_HOME, 'config.py')
 
 kv = unitdata.kv()
 
@@ -45,7 +51,7 @@ def render_flask_secrets(secrets=None):
     if os.path.exists(FLASK_SECRETS):
         os.remove(FLASK_SECRETS)
 
-    app_yml = load_template('flask_secrets.py.j2')
+    app_yml = load_template('flask-config.py.j2')
     app_yml = app_yml.render(secrets=return_secrets(secrets))
 
     spew(FLASK_SECRETS, app_yml)
@@ -91,6 +97,7 @@ def configure_site(site, template, **kwargs):
     context['port'] = config['port']
     context.update(**kwargs)
     conf_path = '/etc/nginx/sites-available/{}'.format(site)
+
     if os.path.exists(conf_path):
         os.remove(conf_path)
     render(source=template,
@@ -106,3 +113,11 @@ def configure_site(site, template, **kwargs):
 
     os.symlink(conf_path, symlink_path)
     log(context)
+
+
+def stop_flask():
+    if host.service_running('flask-reactive'):
+        host.service_stop('flask-reactive')
+    call(['systemctl', 'disable', 'flask-reactive'])
+    if os.path.exists('etc/systemd/system/flask-reactive.service'):
+        os.remove('/etc/systemd/system/flask-reactive.service')
