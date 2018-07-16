@@ -1,5 +1,6 @@
 import os
 from subprocess import call
+import toml
 
 from charms.reactive import (
     when,
@@ -27,15 +28,20 @@ from charmhelpers.core import unitdata, hookenv, host
 from lib.charms.layer.flask_reactive import (
     FLASK_HOME,
     render_flask_secrets,
+    stop_flask,
+    config_nginx,
+    start_flask_gunicorn,
+    load_template,
+    load_unitfile,
 )
 
 from charmhelpers.contrib.charmsupport.volumes import get_config
 
-from charms.layer.flask_reactive import configure_site
-
 from charmhelpers.contrib.python.packages import pip_install_requirements
 
 from charmhelpers.core.hookenv import charm_dir
+
+config = hookenv.config()
 
 
 @when_not('flask-reactive.installed')
@@ -47,8 +53,8 @@ def install_and_create_dir():
     if not os.path.exists(FLASK_HOME):
         os.mkdir(FLASK_HOME)
 
-    if not os.path.exists('FLASK_HOME/instance'):
-        os.mkdir('FLASK_HOME/instance')
+    if not os.path.exists(FLASK_HOME):
+        os.mkdir(FLASK_HOME)
 
     packages = ['Flask', 'Flask-API', 'Flask-Migrate', 'gunicorn',
                 'Flask-Script', 'Flask-SQLAlchemy', 'SQLAlchemy']
@@ -82,22 +88,30 @@ def render_secrets():
 
 
 @when('nginx.available')
-@when_not('nginx.configured')
+@when_not('flask.nginx.configured')
 def nginx_configure():
     """Configures NGINX to flask-reactive"""
 
     status_set('active', 'Configuring Nginx')
 
-    configure_site('flask-reactive', 'vhost.conf', 
-                   app_path='/home/ubuntu/flask')
+    config_nginx('flask-reactive', 'vhost.conf',
+                 app_path='/home/ubuntu/flask')
 
     log('Nginx Configured')
     status_set('active', 'Nginx Cconfigured')
-    set_flag('nginx.configured')
+    set_flag('flask.nginx.configured')
 
 
-@when_not('gunicorn.configured')
-def configure_gunicorn():
+@when('flask.nginx.configured')
+@when_not('flask.gunicorn.ready')
+def flask_gunicorn_configure():
     """Configuring gunicorn"""
-
     
+    status_set('active', 'Starting Flask-reactive')
+
+    stop_flask()
+    start_flask_gunicorn('/home/ubuntu/flask', 'flask-reactive', 
+                         config['port'], config['workers'],
+                         load_unitfile('unitfile.toml'))
+    status_set('active', 'Flask-reactive initialized')
+    set_flag('flask.gunicorn.ready')

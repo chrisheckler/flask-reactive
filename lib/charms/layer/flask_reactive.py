@@ -1,5 +1,5 @@
 import os
-
+from subprocess import call
 import toml
 
 from jinja2 import (
@@ -24,7 +24,7 @@ from charmhelpers.core.host import (
 
 
 FLASK_HOME = "/home/ubuntu/flask"
-FLASK_SECRETS = os.path.join(FLASK_HOME, 'config.py')
+SECRETS = os.path.join(FLASK_HOME, 'config.py')
 
 kv = unitdata.kv()
 
@@ -48,14 +48,14 @@ def render_flask_secrets(secrets=None):
     else:
         secrets = {}
 
-    if os.path.exists(FLASK_SECRETS):
-        os.remove(FLASK_SECRETS)
+    if os.path.exists(SECRETS):
+        os.remove(SECRETS)
 
     app_yml = load_template('flask-config.py.j2')
     app_yml = app_yml.render(secrets=return_secrets(secrets))
 
-    spew(FLASK_SECRETS, app_yml)
-    os.chmod(os.path.dirname(FLASK_SECRETS), 0o755)
+    spew(SECRETS, app_yml)
+    os.chmod(os.path.dirname(SECRETS), 0o755)
 
 
 def spew(path, data):
@@ -86,7 +86,7 @@ def load_site():
     return conf
 
 
-def configure_site(site, template, **kwargs):
+def config_nginx(site, template, **kwargs):
 
     status_set('maintenance', 'Configuring site {}'.format(site))
 
@@ -121,3 +121,42 @@ def stop_flask():
     call(['systemctl', 'disable', 'flask-reactive'])
     if os.path.exists('etc/systemd/system/flask-reactive.service'):
         os.remove('/etc/systemd/system/flask-reactive.service')
+
+
+def load_unitfile():
+    if not os.path.isfile('unitfile.toml'):
+        return {}
+    with open('unitfile.toml') as fp:
+        conf = toml.loads(fp.read())
+
+    return conf
+
+
+def start_flask_gunicorn(path, app, port, workers, template, context=None):
+    stop_flask()
+    path = path.rstrip('/')
+    info = path.rsplit('/', 1)
+    main = info[1].split('.', 1)[0]
+
+    if os.path.exists(info[0] + '/wsgi.py'):
+        os.remove(info[0] + '/wsgi.py')
+    render(source='gunicorn.wsgi',
+           target=info[0] + '/wsgi.py',
+           context={
+               'app': app,
+               'main': main,
+           })
+    unitfile_dict = load_unitfile()
+    unitfile_context = {**unitfile_dict, **context}
+    unitfile_context['port'] = str(port)
+    unitfile_context['pythonpath'] = info[0]
+    unitfile_context['app'] = app
+    unitfile_context['workers'] = str(workers)
+    render(source=template,
+           target='/etc/systemd/system/flask-reactive.service',
+           context=unitfile_context)
+
+    call(['systemctl', 'enable', 'flask-reactive'])
+    host.service_start['flask-reactive']
+
+

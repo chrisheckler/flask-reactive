@@ -1,10 +1,12 @@
  options:
-  flask-reactive:
-    default: 5000
-    type: int
-    description: flask-reactive listening port
-  nginx-gunicorn:
-    default: 2
-    type: int
-    description: Number of gunicoarn workers
+   port:
+     default: 5000
+     type: int
+     description: flask-reactive listening port
+   workers:
+     default: 2
+     type: int
+     description: Number of gunicoarn workers
+  
+
   
