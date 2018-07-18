@@ -1,7 +1,0 @@
-Flask
-gunicorn
-Flask-API
-Flask-Migrate
-Flask-Script
-Flask-SQLAlchemy
-SQLAlchemy

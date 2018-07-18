@@ -13,7 +13,8 @@ from charms.reactive import (
 from charmhelpers.core.hookenv import (
     status_set,
     log,
-    open_port,
+    open_port, 
+    unit_get,
 )
 
 from charmhelpers.core.host import (
@@ -49,13 +50,20 @@ def install_and_create_dir():
     """Flask dir created for config, etc.
        Install Flask/supplemental packages.
     """
-
+    
     if not os.path.exists(FLASK_HOME):
         os.mkdir(FLASK_HOME)
 
-    if not os.path.exists(FLASK_HOME):
-        os.mkdir(FLASK_HOME)
+    """FLASK_HOME = "/home/ubuntu/flask/""" 
+    os.path.join('home', 'ubuntu', 'flask', 
+                 os.path.join(charm_dir(), 'bucketlist'))
 
+    """unit-flask-reactive-163: 11:33:46 INFO unit.flask-reactive/163.juju-log True
+    This log test confirms the path exists, bucketlist should be in my FLASK_HOME,
+    Ive done it before but somehow I cant replicate. Im stumped!"""
+    log(os.path.exists(os.path.join('home', 'ubuntu', 'flask', 
+                       os.path.join(charm_dir(), 'bucketlist'))))
+    
     packages = ['Flask', 'Flask-API', 'Flask-Migrate', 'gunicorn',
                 'Flask-Script', 'Flask-SQLAlchemy', 'SQLAlchemy']
 
@@ -66,11 +74,11 @@ def install_and_create_dir():
     status_set('active', 'Flask and supporting packages installed')
     set_flag('flask-reactive.installed')
 
-
+"""
 @when('flask-reactive.installed')
 @when_not('flask-reactive.secrets.available')
 def render_secrets():
-    """Write out flask secrets."""
+    #Write out flask secrets.
     
     status_set('active', 'Rendering flask-reactive config')
 
@@ -78,6 +86,7 @@ def render_secrets():
              'DEBUG': False,
              'TESTING': False,
              'SECRET': os.urandom(16),
+             'SQLALCHEMY_DATABASE_URI': 'pgsql_config',
            }
 
     render_flask_secrets(ctxt)
@@ -85,7 +94,7 @@ def render_secrets():
     status_set('active', 'Flask config rendered')
     log('Flask config rendered')
     set_flag('flask-reactive.secrets.available')
-
+"""
 
 @when('nginx.available')
 @when_not('flask.nginx.configured')
@@ -111,8 +120,8 @@ def flask_gunicorn_configure():
 
     stop_flask()
     start_flask_gunicorn(FLASK_HOME, 'flask-reactive', 
-                         config['port'], config['workers'],
-                         )
-    status_set('active', 'Flask-reactive initialized')
+                         config['port'], config['workers'])
+
+    status_set('active', 'Flask-reactive ready')
     log('Flask-reactive Ready')
     set_flag('flask.gunicorn.ready')

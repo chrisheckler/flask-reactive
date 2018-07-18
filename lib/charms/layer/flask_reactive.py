@@ -23,8 +23,7 @@ from charmhelpers.core.host import (
 )
 
 
-FLASK_HOME = "/home/ubuntu/flask"
-SECRETS = os.path.join(FLASK_HOME, 'config.py')
+FLASK_HOME = "/home/ubuntu/flask/"
 
 kv = unitdata.kv()
 
@@ -48,14 +47,11 @@ def render_flask_secrets(secrets=None):
     else:
         secrets = {}
 
-    if os.path.exists(SECRETS):
-        os.remove(SECRETS)
-
     app_yml = load_template('flask-config.py.j2')
     app_yml = app_yml.render(secrets=return_secrets(secrets))
 
-    spew(SECRETS, app_yml)
-    os.chmod(os.path.dirname(SECRETS), 0o755)
+    spew(FLASK_HOME + 'config.py', app_yml)
+    #os.chmod(os.path.dirname(FLASK_HOME + 'config.py'), 0o755)
 
 
 def spew(path, data):
@@ -102,7 +98,6 @@ def config_nginx(site, template, **kwargs):
 
     status_set('maintenance', 'Configuring site {}'.format(site))
 
-    status_set('active', '')
     config = hookenv.config()
     context = load_site()
     context['host'] = config['host']
@@ -130,11 +125,12 @@ def config_nginx(site, template, **kwargs):
 def stop_flask():
     """Stops flask service"""
 
-    if host.service_running('flask_reactive'):
-        host.service_stop('flask_reactive')
-    call(['systemctl', 'disable', 'flask_reactive'])
-    if os.path.exists('etc/systemd/system/flask_reactive.service'):
-        os.remove('/etc/systemd/system/flask_reactive.service')
+    if host.service_running('flask-reactive'):
+        host.service_stop('flask-reactive')
+    call(['systemctl', 'disable', 'flask-reactive'])
+    
+    if os.path.exists('etc/systemd/system/flask-reactive.service'):
+        os.remove('/etc/systemd/system/flask-reactive.service')
 
 
 def start_flask_gunicorn(path, app, port, workers):
@@ -145,24 +141,24 @@ def start_flask_gunicorn(path, app, port, workers):
     info = path.rsplit('/', 1)
     main = info[1].split('.', 1)[0]
 
-    if os.path.exists(info[0] + '/wsgi.py'):
-        os.remove(info[0] + '/wsgi.py')
+    if os.path.exists(info[0] + '/run.py'):
+        os.remove(info[0] + '/run.py')
     render(source='gunicorn.wsgi',
-           target=info[0] + '/wsgi.py',
+           target=info[0] + '/run.py',
            context={
                'app': app,
                'main': main,
            })
+
     unitfile_dict = load_unitfile()
     unitfile_context = {**unitfile_dict}
     unitfile_context['port'] = str(port)
     unitfile_context['pythonpath'] = info[0]
     unitfile_context['app'] = app
     unitfile_context['workers'] = str(workers)
+
     render(source=load_template('unitfile.toml'),
            target='/etc/systemd/system/{}.service'.format(app),
            context=unitfile_context)
 
     call(['systemctl', 'enable', '{}'.format(app)])
-
-
